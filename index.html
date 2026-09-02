@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>GameU - CX Scheduling KPI Tracking</title>
+<meta http-equiv="Cache-Control" content="no-store"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<style>
+
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f7f8fa; color: #222; }
+header { background: #1F3A5F; color: #fff; padding: 20px 32px; }
+header h1 { margin: 0 0 4px; font-size: 24px; }
+header .meta { font-size: 13px; color: #b8c5d6; }
+header .data-source { font-size: 11px; color: #9aaac0; margin-top: 8px; max-width: 1080px; line-height: 1.5; }
+.content { max-width: 1280px; margin: 0 auto; padding: 24px 32px 60px; }
+h2 { color: #1F3A5F; border-bottom: 2px solid #E4E9EF; padding-bottom: 6px; margin-top: 32px; font-size: 18px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+.stat { background: #fff; border: 1px solid #E4E9EF; border-radius: 6px; padding: 14px 16px; }
+.stat .big { font-size: 26px; font-weight: 700; color: #1F3A5F; }
+.stat .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+.stat.at-limit .big { color: #C0392B; } .stat.watch .big { color: #E67E22; } .stat.healthy .big { color: #27AE60; }
+.panel { background: #fff; border: 1px solid #E4E9EF; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+.calibration { background: #FFF4E5; border-color: #F5B041; }
+.slo-callout { background: #FFEFEF; border: 2px solid #C0392B; padding: 18px 22px; }
+.slo-callout h2 { margin-top: 0; }
+.slo-callout h3 { color: #78281F; }
+.exec-summary { background: #F8FAFC; border-left: 4px solid #1F3A5F; }
+.headcount-alert { background: #FFF4E5; border: 1px solid #F5B041; border-left: 6px solid #B9770E; border-radius: 6px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 18px; }
+.headcount-alert .ha-badge { background: #B9770E; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; white-space: nowrap; }
+.headcount-alert .ha-counter { font-size: 22px; font-weight: 700; color: #7E5109; line-height: 1; white-space: nowrap; }
+.headcount-alert .ha-counter .ha-counter-label { display: block; font-size: 10px; font-weight: 600; color: #B9770E; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.headcount-alert .ha-msg { font-size: 13px; color: #5D4037; line-height: 1.5; flex: 1; }
+.headcount-alert .ha-msg strong { color: #7E5109; }
+.exec-summary ul { line-height: 1.7; padding-left: 22px; margin: 4px 0; }
+.exec-summary li { margin-bottom: 8px; font-size: 14px; }
+.staleness-controls { display: flex; gap: 12px; align-items: center; margin: 12px 0 18px; flex-wrap: wrap; }
+.staleness-controls input[type='text'] { flex: 1; min-width: 240px; padding: 8px 12px; border: 1px solid #C8D3E0; border-radius: 4px; font-size: 13px; }
+.staleness-controls button { background: #1F3A5F; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.staleness-controls button:hover { background: #2C4D7B; }
+.staleness-controls label { font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.staleness-legend { font-size: 11px; color: #666; margin: 8px 0 16px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.staleness-legend .swatch { display: inline-block; width: 18px; height: 14px; vertical-align: middle; border-radius: 3px; margin-right: 4px; border: 1px solid rgba(0,0,0,0.08); }
+.staleness-legend .sw-r1 { background: #FADBD8; }
+.staleness-legend .sw-r2 { background: #FCF3CF; }
+.staleness-legend .sw-r3 { background: #D5F5E3; }
+.staleness-legend .sw-rc-low { background: #FADBD8; }
+.staleness-legend .sw-rc-mid { background: #FCF3CF; }
+.staleness-legend .sw-rc-high { background: #D5F5E3; }
+.supervisor-group { background: #fff; border: 1px solid #E4E9EF; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+.supervisor-group .sg-header { padding: 12px 18px; background: #F8FAFC; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E4E9EF; }
+.supervisor-group .sg-header h3 { margin: 0; font-size: 15px; color: #1F3A5F; font-weight: 700; }
+.supervisor-group .sg-header h3::before { content: 'â–¸ '; display: inline-block; margin-right: 6px; transition: transform 0.15s; color: #888; }
+.supervisor-group.open .sg-header h3::before { transform: rotate(90deg); }
+.supervisor-group .sg-meta { font-size: 11px; color: #666; background: #E4E9EF; padding: 3px 10px; border-radius: 999px; }
+.supervisor-group .sg-body { display: none; padding: 14px 18px; }
+.supervisor-group.open .sg-body { display: block; }
+.instructor-block { margin-bottom: 14px; }
+.instructor-block .ib-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.instructor-block .ib-name { font-weight: 700; color: #1F3A5F; font-size: 13px; }
+.instructor-block .ib-xpid { font-size: 10px; color: #888; }
+.instructor-block table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 2px; }
+.instructor-block th { background: #2C3E50; color: #fff; text-align: left; padding: 4px 8px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.instructor-block td { padding: 4px 8px; border-bottom: 1px solid #EEF3F8; }
+.instructor-block th.num, .instructor-block td.num { text-align: center; }
+.instructor-block td.rating-1 { background: #FADBD8; color: #78281F; font-weight: 700; text-align: center; }
+.instructor-block td.rating-2 { background: #FCF3CF; color: #7D6608; font-weight: 700; text-align: center; }
+.instructor-block td.rating-3 { background: #D5F5E3; color: #196F3D; font-weight: 700; text-align: center; }
+.instructor-block td.recap-low { background: #FADBD8; color: #78281F; font-weight: 700; text-align: center; }
+.instructor-block td.recap-mid { background: #FCF3CF; color: #7D6608; font-weight: 700; text-align: center; }
+.instructor-block td.recap-high { background: #D5F5E3; color: #196F3D; font-weight: 700; text-align: center; }
+.tab-nav { background: #fff; border-bottom: 1px solid #E4E9EF; padding: 0 32px; display: flex; gap: 4px; }
+.tab-btn { background: none; border: none; padding: 14px 20px; font-size: 14px; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
+.tab-btn:hover { color: #1F3A5F; }
+.tab-btn.active { color: #1F3A5F; border-bottom-color: #F39C12; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.ops-chart-line { fill: none; stroke-width: 2.5; }
+.ops-legend { font-size: 12px; color: #444; margin-top: 8px; }
+.ops-legend span { display: inline-block; margin-right: 18px; }
+.ops-legend .swatch { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; }
+.cal-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.cal-opt { background: #fff; border: 1px solid #E4E9EF; border-radius: 5px; padding: 12px 14px; }
+.cal-opt .num { font-size: 28px; font-weight: 700; color: #1F3A5F; }
+.cal-opt.tight    { background: #FDECEA; border-color: #C0392B; }
+.cal-opt.baseline { background: #FEF9E7; border-color: #D4AC0D; border-width: 2px; }
+.cal-opt.generous { background: #EAFAF1; border-color: #27AE60; }
+.cal-opt .rec-tag { display: inline-block; background: #D4AC0D; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; margin-left: 6px; }
+.cal-opt h4 { margin: 0 0 4px; font-size: 13px; color: #1F3A5F; }
+.cal-opt p { margin: 4px 0 0; font-size: 12px; color: #444; }
+.cal-opt .zone { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 6px; }
+.cal-opt.tight .zone    { background: #C0392B; color: #fff; }
+.cal-opt.baseline .zone { background: #D4AC0D; color: #fff; }
+.cal-opt.generous .zone { background: #27AE60; color: #fff; }
+svg { display: block; }
+.grid { stroke: #EEF3F8; stroke-width: 1; }
+.line { fill: none; stroke: #1F3A5F; stroke-width: 2.5; }
+.threshold-line { stroke: #27AE60; stroke-width: 2; stroke-dasharray: 6,4; }
+.current-line { stroke: #C0392B; stroke-width: 2; stroke-dasharray: 2,3; }
+circle { fill: #1F3A5F; }
+circle.partial { fill: #fff; stroke: #1F3A5F; stroke-width: 2; }
+.xlabel, .ylabel { font-size: 11px; fill: #666; font-family: -apple-system, sans-serif; }
+.legend { font-size: 12px; color: #444; margin-top: 8px; }
+.legend span { display: inline-block; margin-right: 16px; }
+.legend .swatch { display: inline-block; width: 12px; height: 2px; vertical-align: middle; margin-right: 4px; }
+table.data { border-collapse: collapse; width: 100%; font-size: 12px; background: #fff; }
+table.data thead th { background: #2C3E50; color: #fff; text-align: left; padding: 8px 8px; font-weight: 600; font-size: 11px; }
+table.data tbody td { padding: 6px 8px; border-bottom: 1px solid #E4E9EF; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.healthy { background: #D5F5E3; color: #196F3D; }
+.watch { background: #FCF3CF; color: #7D6608; }
+.at-limit { background: #F5B7B1; color: #78281F; }
+.partial-tag { background: #E5E7E9; color: #566573; padding: 1px 6px; border-radius: 8px; font-size: 10px; text-transform: uppercase; }
+.mix-row { display: grid; grid-template-columns: 180px 1fr 50px; align-items: center; gap: 10px; padding: 4px 0; font-size: 13px; }
+.mix-bar-wrap { background: #F0F3F5; border-radius: 3px; height: 14px; overflow: hidden; }
+.mix-bar { height: 100%; border-radius: 3px; }
+.mix-pct { font-weight: 600; color: #1F3A5F; text-align: right; }
+.bucket-tag { display: inline-block; padding: 1px 7px; border-radius: 9px; color: #fff; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; margin-left: 6px; vertical-align: middle; }
+.outcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0 8px; }
+.outcome-card { background: #fff; border: 1px solid #E4E9EF; border-radius: 6px; padding: 14px 18px; }
+.outcome-card h4 { margin: 0 0 8px; font-size: 14px; color: #1F3A5F; }
+.outcome-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.outcome-table td { padding: 6px 4px; border-bottom: 1px solid #EEF3F8; }
+.outcome-table tr:last-child td { border-bottom: none; }
+.outcome-table td:last-child { text-align: right; }
+.sig-cell { text-align: center; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+.sig-green { background: #CCE5CC; color: #1A6B1A; }
+.sig-yellow { background: #FFF2CC; color: #8B6508; }
+.sig-red { background: #FFCCCC; color: #8B0000; }
+.sig-empty { background: #F0F3F5; color: #AAA; }
+.sig-empty::before { content: "-"; }
+.sig-nottracked { background: #DDDDDD; color: #808080; font-style: italic; }
+.sig-note { font-size: 12px; color: #666; max-width: 260px; }
+.signals-panel .legend { margin-top: 12px; }
+.takeaways ul { line-height: 1.7; padding-left: 22px; }
+.takeaways li { margin-bottom: 6px; font-size: 14px; }
+.note { font-size: 12px; color: #666; font-style: italic; }
+
+.tab-pane { display: block; }
+body { max-width: 1400px; margin: 0 auto; }
+</style>
+</head><body>
+<div style="padding:20px 24px">
+<h1 style="margin:0 0 4px;font-size:22px;color:#1F3A5F">GameU - CX Scheduling KPI Tracking</h1>
+<div style="font-size:13px;color:#3F4B5C;margin-bottom:16px">Standalone view of the operational KPI signals. Refreshed Wednesday, September 2, 2026 4:17 PM ET.</div>
+<div id="tab-operational" class="tab-pane active">
+
+<div style='background:#E8F5E9;border:1px solid #16A085;border-left:6px solid #16A085;border-radius:8px;padding:20px 24px;margin-bottom:18px'>
+      <div style='display:flex;align-items:center;gap:24px;flex-wrap:wrap'>
+        <div style='flex:0 0 auto'>
+          <div style='font-size:12px;color:#16A085;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:2px'>10-day Scheduling KPI &middot; This week</div>
+          <div style='font-size:52px;font-weight:900;color:#16A085;line-height:1'>100%</div>
+          <div style='font-size:12px;color:#4A5A6E;margin-top:4px'>3 of 3 decided on-time &middot; 5 new records this week</div>
+        </div>
+        <div style='flex:1;min-width:220px;border-left:1px solid #E4E9EF;padding-left:24px'>
+          <div style='font-size:11px;color:#7A8A9A;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px'>Current milestone (Week of 9/1 - 9/6)</div>
+          <div style='font-size:22px;font-weight:800;color:#1F3A5F;line-height:1.1'>60% target</div>
+          <div style='margin-top:10px'><span style='display:inline-block;padding:4px 12px;background:#16A085;color:#fff;border-radius:12px;font-size:11px;font-weight:800;letter-spacing:0.6px'>ON TARGET</span></div>
+          <div style='margin-top:12px;background:#fff;height:10px;border-radius:5px;overflow:hidden;border:1px solid #E4E9EF;position:relative'>
+            <div style='position:absolute;left:0;top:0;bottom:0;width:100%;background:#16A085'></div>
+            <div style='position:absolute;left:60%;top:-2px;bottom:-2px;width:2px;background:#1F3A5F' title='60% target'></div>
+          </div>
+          <div style='display:flex;justify-content:space-between;font-size:10px;color:#7A8A9A;margin-top:3px'><span>0%</span><span style='color:#1F3A5F;font-weight:700'>60% target</span><span>100%</span></div>
+        </div>
+      </div>
+      <div style='margin-top:14px;padding-top:12px;border-top:1px solid #E4E9EF;display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:#3F4B5C'>
+        <div><strong style='color:#16A085'>9/1 - 9/15 cumulative:</strong> 100% (3 of 3 decided, 4 total) &middot; goal 80% by 9/15</div>
+        <div><strong>Ramp:</strong> 60% this week &rarr; 70% next &rarr; 80% by 9/15</div>
+        <div><strong>Pending outcome:</strong> 1 still in window and not yet 10 days old</div>
+      </div>
+      <div style='font-size:11px;color:#7A8A9A;margin-top:8px'>New students created 9/1 to 9/15. Denominator counts records whose 10-day clock has expired (completed or still open past 10d).</div>
+    </div> <div style='background:#FFFFFF;border:1px solid #E4E9EF;border-radius:8px;padding:16px 20px;margin-bottom:18px'>
+      <div style='display:flex;gap:24px;flex-wrap:wrap;align-items:center'>
+        <div style='flex:1;min-width:180px'>
+          <div style='font-size:11px;color:#1F3A5F;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px'>Completions This Week</div>
+          <div style='font-size:40px;font-weight:900;color:#16A085;line-height:1'>23</div>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:4px'>Students scheduled since Monday, regardless of when they came in</div>
+        </div>
+        <div style='flex:1;min-width:180px;border-left:1px solid #E4E9EF;padding-left:24px'>
+          <div style='font-size:11px;color:#1F3A5F;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px'>Completions 9/1 - 9/15</div>
+          <div style='font-size:40px;font-weight:900;color:#16A085;line-height:1'>14</div>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:4px'>Total scheduled in the KPI window (any create date)</div>
+        </div>
+      </div>
+      <div style='font-size:11px;color:#7A8A9A;margin-top:10px;padding-top:8px;border-top:1px solid #E4E9EF'>Throughput = raw schedule count. Different from the 10-day KPI above, which only measures NEW arrivals in the 9/1-9/15 window and whether they hit the 10-day target.</div>
+    </div> <div style='background:#FFFFFF;border:1px solid #E4E9EF;border-radius:8px;padding:16px 20px;margin-bottom:18px'>
+          <div style='font-size:12px;color:#1F3A5F;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px'>10-Day KPI by Coordinator &middot; 9/1 to 9/15 window</div>
+          <table class='data' style='width:100%;font-size:13px'>
+            <thead><tr>
+              <th style='text-align:left'>Coordinator</th>
+              <th class='num' title='Total records created in the KPI window and assigned to this coordinator'>New in window</th>
+              <th class='num' title='On-time completed out of records whose 10-day clock has expired'>On-time / decided</th>
+              <th class='num' title='On-time rate for records with a known outcome'>Rate</th>
+              <th class='num' title='Currently open and already past 10 days - locked-in KPI miss'>Overdue (open >10d)</th>
+              <th class='num' title='Currently open 5-10 days - needs immediate push to hit KPI'>At risk (5-10d)</th>
+              <th class='num' title='Currently open under 5 days - plenty of runway'>Fresh (<5d)</th>
+            </tr></thead>
+            <tbody><tr><td>Amelia</td><td class='num'>3</td><td class='num'>3 / 3</td><td class='num' style='color:#16A085;font-weight:700'>100%</td><td class='num'>0</td><td class='num'>0</td><td class='num'>0</td></tr><tr><td>Sarah W</td><td class='num'>1</td><td class='num'>0 / 0</td><td class='num' style='color:#7A8A9A;font-weight:700'>-</td><td class='num'>0</td><td class='num'>0</td><td class='num'>1</td></tr></tbody>
+          </table>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:8px'>Sorted by overdue count (biggest KPI risks first). Rate colored vs current milestone target (60%).</div>
+        </div> <div style='background:#FFFFFF;border:1px solid #E4E9EF;border-radius:8px;padding:16px 20px;margin-bottom:18px'>
+          <div style='font-size:12px;color:#1F3A5F;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px'>Completions Leaderboard &middot; 9/1 to 9/15</div>
+          <table class='data' style='width:100%;font-size:13px'>
+            <thead><tr>
+              <th style='text-align:left'>Student (Task)</th>
+              <th style='text-align:left'>Scheduled by</th>
+              <th class='num'>Days to schedule</th>
+              <th class='num'>Completed</th>
+            </tr></thead>
+            <tbody><tr><td>James Obendorf</td><td>Amelia</td><td class='num' style='color:#16A085;font-weight:700'>-0.4d</td><td class='num'>9/1</td></tr><tr><td>Landon Page</td><td>Amelia</td><td class='num' style='color:#16A085;font-weight:700'>-0.4d</td><td class='num'>9/1</td></tr><tr><td>Kathryn Penn</td><td>Amelia</td><td class='num' style='color:#16A085;font-weight:700'>-0.5d</td><td class='num'>9/1</td></tr></tbody>
+          </table>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:8px'>Most recent first. Green = on-time (<=10 days), red = late.</div>
+        </div> <div style='background:#FFFFFF;border:1px solid #E4E9EF;border-radius:8px;padding:16px 20px;margin-bottom:18px'>
+      <div style='font-size:12px;color:#1F3A5F;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px'>Intake vs Drops &middot; 9/1 to today</div>
+      <div style='display:flex;gap:24px;flex-wrap:wrap'>
+        <div style='flex:1;min-width:160px'>
+          <div style='font-size:11px;color:#7A8A9A;font-weight:700;text-transform:uppercase;letter-spacing:0.5px'>New in Pipeline</div>
+          <div style='font-size:36px;font-weight:900;color:#1F3A5F;line-height:1'>4</div>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:4px'>Notion New Student Scheduling records created</div>
+        </div>
+        <div style='flex:1;min-width:160px;border-left:1px solid #E4E9EF;padding-left:24px'>
+          <div style='font-size:11px;color:#7A8A9A;font-weight:700;text-transform:uppercase;letter-spacing:0.5px'>Drops (Pipedrive Lost)</div>
+          <div style='font-size:36px;font-weight:900;color:#B23A48;line-height:1'>3</div>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:4px'>Deals moved to Lost since 9/1</div>
+        </div>
+        <div style='flex:1;min-width:160px;border-left:1px solid #E4E9EF;padding-left:24px'>
+          <div style='font-size:11px;color:#7A8A9A;font-weight:700;text-transform:uppercase;letter-spacing:0.5px'>Net flow</div>
+          <div style='font-size:36px;font-weight:900;color:#16A085;line-height:1'>+1</div>
+          <div style='font-size:11px;color:#7A8A9A;margin-top:4px'>Green = growing, red = shrinking</div>
+        </div>
+      </div>
+      <table class='data' style='font-size:12px;margin-top:8px;width:100%'><thead><tr><th style='text-align:left'>Reason</th><th class='num'>Count</th></tr></thead><tbody><tr><td>Unresponsive</td><td class='num'>3</td></tr></tbody></table>
+    </div>
+
+<div style='background:#E8F5E9;border:1px solid #16A085;border-left:6px solid #16A085;border-radius:8px;padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;gap:24px;flex-wrap:wrap'>
+      <div style='flex:0 0 auto'>
+        <div style='font-size:12px;color:#16A085;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:2px'>Absence Rate</div>
+        <div style='font-size:52px;font-weight:900;color:#16A085;line-height:1'>11.7%</div>
+        <div style='font-size:12px;color:#4A5A6E;margin-top:4px' title='family cancels / (scheduled - Game-U holidays) YTD 2026'>Family absences / scheduled (excl. holidays) &middot; YTD 2026</div>
+      </div>
+      <div style='flex:1;min-width:220px;border-left:1px solid #E4E9EF;padding-left:24px'>
+        <div style='font-size:11px;color:#7A8A9A;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px'>Target</div>
+        <div style='font-size:22px;font-weight:800;color:#1F3A5F;line-height:1.1'>Under 15%</div>
+        <div style='margin-top:10px'><span style='display:inline-block;padding:4px 12px;background:#16A085;color:#fff;border-radius:12px;font-size:11px;font-weight:800;letter-spacing:0.6px'>ON TARGET</span> <span style='font-size:12px;color:#4A5A6E;margin-left:8px'>3.3pts under target</span></div>
+        <div style='margin-top:12px;background:#fff;height:10px;border-radius:5px;overflow:hidden;border:1px solid #E4E9EF;position:relative'>
+          <div style='position:absolute;left:0;top:0;bottom:0;width:39%;background:#16A085'></div>
+          <div style='position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#1F3A5F' title='15% target'></div>
+        </div>
+        <div style='display:flex;justify-content:space-between;font-size:10px;color:#7A8A9A;margin-top:3px'><span>0%</span><span style='color:#1F3A5F;font-weight:700'>15% target</span><span>30%</span></div>
+      </div>
+    </div>
+
+<h2>New Student Pipeline (Notion)</h2>
+<p class="note">Live snapshot of the New Student Scheduling database - the team's true intake workload. The Notion schema uses four statuses (Not started, In progress, Hold, Done); nearly every new request starts in "In progress" so the meaningful capacity signals are <strong>age of the in-flight records</strong> and <strong>how many are past the 10-day SLO</strong>. Active = Not started + In progress + Hold, read from Status rather than from Date Completed (about 29% of finished records, all pre-2026, never got a completion date).</p>
+<div class="stats">
+<div class="stat"><div class="big">25</div><div class="label">In progress</div></div>
+<div class="stat"><div class="big">4</div><div class="label">Not started</div></div>
+<div class="stat "><div class="big">0</div><div class="label">On hold</div></div>
+<div class="stat at-limit"><div class="big">21</div><div class="label">Past 10-day SLO</div></div>
+</div>
+
+<h3 style="margin-top:18px">Pipeline shape &mdash; age of in-flight records</h3>
+<p class="note">Where the active records (In progress + Hold) are sitting in their lifecycle. Buckets are aligned to the 10-day SLO boundary: anything in "11-30 days" or older is already breaching. A healthy pipeline is weighted toward the top buckets; weight in the bottom buckets signals the team is falling behind.</p>
+<table class="data" style="margin-bottom:12px"> <thead><tr><th>Age bucket</th><th style="text-align:right">Records</th><th style="text-align:right">Share</th><th>Distribution</th><th>SLO status</th></tr></thead> <tbody> <tr><td><strong>0-3 days</strong></td><td style="text-align:right"><strong>2</strong></td><td style="text-align:right">7%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:7%;background:#27AE60"></div></div></td><td><span class='badge healthy'>Fresh</span></td></tr> <tr><td><strong>4-7 days</strong></td><td style="text-align:right"><strong>4</strong></td><td style="text-align:right">14%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:14%;background:#2ECC71"></div></div></td><td><span class='badge healthy'>Within SLO</span></td></tr> <tr><td><strong>8-10 days</strong></td><td style="text-align:right"><strong>2</strong></td><td style="text-align:right">7%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:7%;background:#F5B041"></div></div></td><td><span class='badge watch'>Approaching SLO</span></td></tr> <tr><td><strong>11-30 days</strong></td><td style="text-align:right"><strong>14</strong></td><td style="text-align:right">48%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:48%;background:#E67E22"></div></div></td><td><span class='badge at-limit'>Past SLO</span></td></tr> <tr><td><strong>31-90 days</strong></td><td style="text-align:right"><strong>7</strong></td><td style="text-align:right">24%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:24%;background:#C0392B"></div></div></td><td><span class='badge at-limit'>Stale</span></td></tr> <tr><td><strong>91+ days</strong></td><td style="text-align:right"><strong>0</strong></td><td style="text-align:right">0%</td><td><div class="mix-bar-wrap" style="width:200px"><div class="mix-bar" style="width:0%;background:#7B241C"></div></div></td><td><span class='badge at-limit'>Very stale</span></td></tr> </tbody></table> <p class="note" style="margin-top:0"><strong>Total active: 29 records.</strong>  <strong>21 records (72%) are already past the 10-day SLO.</strong>  7 of those have been sitting more than a month - those are the ones worth a manual review to see if they should be moved to Hold, escalated, or closed out as no-response. </p>
+
+<h2>10-Day SLO Compliance</h2>
+<div class="panel slo-callout">
+<p style="margin-top:0; font-size:14px"><strong>The rule (March 19 Weighting Decisions doc):</strong> New Student Scheduling has an <strong>internal SLO of 10 days</strong> from when a scheduling request is created to when it's marked Done. Records past that window represent the team's inability to meet the stated commitment.</p>
+
+<div class="stats" style="margin-top:12px">
+<div class="stat at-limit"><div class="big">21</div><div class="label">In pipeline, already past 10-day SLO</div></div> <div class="stat at-limit"><div class="big">72%</div><div class="label">% of active pipeline breaching SLO</div></div> <div class="stat"><div class="big">103</div><div class="label">Completed late (8-wk window)</div></div> <div class="stat at-limit"><div class="big">44%</div><div class="label">Historical breach rate</div></div>
+</div>
+
+<h3 style="margin-top:18px">Per-week SLO performance (completed intakes)</h3>
+<table class="data" style="font-size:12px">
+<thead><tr><th>Week</th><th>Completed on time</th><th>Completed late (&gt;10d)</th><th>Breach rate</th></tr></thead>
+<tbody>
+<tr><td><strong>Week 1 (6/15-6/21)</strong></td><td>0</td><td>0</td><td>&mdash;</td></tr><tr><td><strong>Week 2 (6/22-6/28)</strong></td><td>11</td><td>0</td><td><span class='badge healthy'>0%</span></td></tr><tr><td><strong>Week 3 (6/29-7/5)</strong></td><td>7</td><td>7</td><td><span class='badge at-limit'>50%</span></td></tr><tr><td><strong>Week 4 (7/6-7/12)</strong></td><td>17</td><td>5</td><td><span class='badge watch'>23%</span></td></tr><tr><td><strong>Week 5 (7/13-7/19)</strong></td><td>11</td><td>6</td><td><span class='badge at-limit'>35%</span></td></tr><tr><td><strong>Week 6 (7/20-7/26)</strong></td><td>22</td><td>6</td><td><span class='badge watch'>21%</span></td></tr><tr><td><strong>Week 7 (7/27-8/2)</strong></td><td>8</td><td>7</td><td><span class='badge at-limit'>47%</span></td></tr><tr><td><strong>Week 8 (8/3-8/9)</strong></td><td>13</td><td>14</td><td><span class='badge at-limit'>52%</span></td></tr><tr><td><strong>Week 9 (8/10-8/16)</strong></td><td>11</td><td>13</td><td><span class='badge at-limit'>54%</span></td></tr><tr><td><strong>Week 10 (8/17-8/23)</strong></td><td>7</td><td>19</td><td><span class='badge at-limit'>73%</span></td></tr><tr><td><strong>Week 11 (8/24-8/30)</strong></td><td>14</td><td>15</td><td><span class='badge at-limit'>52%</span></td></tr><tr><td><strong>Week 12 (8/31-9/6)</strong> <span class="partial-tag">partial</span></td><td>12</td><td>11</td><td><span class='badge at-limit'>48%</span></td></tr>
+</tbody>
+</table>
+<p class="note" style="margin-top:8px">Each row counts intakes <em>completed</em> in that week, regardless of when they were created. Breach rate = % of that week's completions that took &gt;10 days from Created to Done. A week with zero completions shows a dash.</p>
+</div>
+
+
+
+</div>
+
+
+</div>
+</body></html>
